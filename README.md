@@ -17,67 +17,80 @@ mongod -- dbpath C:\example\data
 ```powershell
 mongo
 ```
-
-
 ## 정의
 
 - Document oriented 데이터베이스
+- 특정한 종류의 애플리케이션을 더 쉽고 더 빠르게 데이터 통합을 가능
+- 아페로 GPL과 아파치 라이센스를 를 결합하여 공개된 몽고DB는 오픈 소스 소프트웨어
 
-## Database
+## RDBS 용어 비교
 
-- collection을 담고 있는 컨테이너
-
-## Collection
-
-- RDMS의 테이블과 비슷한 개념(스키마가 없다. - 정해진 구조가 없다.)
-
-## document
-
-- RDBMS에서
-
-## Embedded do
-
-- 테이블 조인과
+- Database : collection을 담고 있는 컨테이너
+- Collection : RDMS의 테이블과 비슷한 개념이지만, 스키마(정해진 구조)가 없다.
+- Document : RDBMS에서의 row(record) 와 비슷한 개념
+- Field : RDBS 에서의 column(field)와 비슷한 개념
+- _id field : RDMBS의 primary key와 비슷한 개념
+- Embedded document: RDBMS에서의 table join 과 비슷한 개념
 
 ## 기본명령어
 
+db.hel() → 명령어 리스트 출력
+
 show dbs → 데이터베이스의 리스트를 확인
 
-use 데이터베이스명 → 작업할 데이터베이스를 생성(없는 경우 생성), 작업하고 싶은 데이터베이스
+use 데이터베이스명 → 작업할 데이터베이스를 생성(없는 경우 생성)
+
+                                     작업하고 싶은 데이터베이스
 
 db → 현재 작업 중인 데이터베이스를 확인
 
-show collections → 컬렉션 목록 확인(select
+show collections →  작업 중인 DB 안에 collection 리스트 출력
 
-db.createCollection(”컬렉션명”) → 컬렉션 상ㅌ
+## Collection 관련 명령어
 
-## document 삽입(데이터insert)
+db.createCollection(”컬렉션명”) → 현재 작업 중인 DB 안에 컬렉션 생성
+
+db.컬렉션명1.renameCollection(”컬렉션명2”) → collection 이름 변경(컬렉션명1→컬렉션명2)
+
+## Document 삽입(데이터insert)
 
 mongodb는 데이터를 json 방식으로 관리
 
+컬렉션이 존재하지 않아도 insert를 하면 자동으로 컬렉션이 생성되고 insert 실행
+
+_id field를 입력하지 않으면 자동으로 생성 : 고유값을 지정하고 12byte
+
 1. insert 메소드
 - db.컬렉션명.insert({필드명1:펄드값1,필드명2:필드값2...})
+- 필드 값이 문자일 경우 “ “로 감싸야 한다.
 1. 배열
 - json의 배열과 동일하게 표현
 
     {필드명1:[”값1”,”값2”,”값3”,”값4”]}
 
-## document 조회
+## Document 조회
 
 - 컬렉션에 저장된 document를 조회
-- db.컬렉션명.find()
-    - select * from 테이블명과 도일
-    - 컬렉션의 모든 document를 조회
+1. 모든 document 조회
+    - db.컬렉션명.find() ⇒ SQL 의 SELECT * FROM 테이블명과 동일
+2. 조건에 맞는 document 조회
+    - db.컬렉션명.find(조건)⇒ SQL의 SELECT * FROM 테이블명 WHERE 조건과 동일
+    - 조건을 주는 방식은 SQL처럼 다양하다.
 
-## document 수정
+```sql
+db.emp.find({id:1101})
+```
+
+## Document 수정
+
 - update
 - CRUD를 위한 메소드는 json 형식으로 정의해야 한다.
 - 구문
 
 ```sql
-db.collection명.update(<filter>,-조건(sql, update문의 where절)
-											 <update>,-set절(변경할 필드와 값)
-											 <options>)-update위해서 설정해야 하는 내용
+-- db.collection명.update(<filter>,-조건(sql, update문의 where절)
+-- <update>,-set절(변경할 필드와 값) 
+-- <options>)-update위해서 설정해야 하는 내용
 <filter>
 업데이트를 하기 윈한 조건
 {조건필드:값.....}
@@ -155,6 +168,7 @@ db.score.update({id:"jang"},{$push:{"favorites.city":{each:["천안","가평","�
 ```powershell
 db.score.update({id:"jang"},{$pullAll:{"favorites.city":["천안","가평"]}})
 ```
+
 - 예제
 
 ```sql
@@ -173,6 +187,8 @@ db.score.update({id:"jang"},{$pop:{"favorites.city":1}})
 -- 4. servlet데이터가 100점인 모든 document에 bonus를 3000을 추가하세요. 기존데이터가 존재하면 증가되도록 구현하세요
  db.score.update({servlet:100},{$inc:{bonus:+3000}},{multi:true})
 -- 5. song의 lang.ms에 "visual basic","asp",".net"을 한꺼번에 추가하세요
-db.score.update({id:"song"},{$set:{"lang.ms":["visual basic","asp",".net"]}})
+db.score.update({id:"song"},{$push:{"lang.ms":{$each:["visual basic","asp",".net"]}}})
+-- db.score.update({id:"song"},{$set:{"lang.ms"::["visual basic","asp",".net"]}})
 ```
-## document 삭제
+
+## Document 삭제
