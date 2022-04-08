@@ -420,5 +420,5 @@ db.collection명.remove({조건})
 
 <h2> Python MongoDb 연결</h2>
 <br>
-<a href = "https://github.com/jinu12/MongoDb/blob/main/python/__ConnectionPython">바로가기</a>
+<a href = "https://github.com/jinu12/MongoDb/blob/main/python/__ConnectPython.md">바로가기</a>
 
