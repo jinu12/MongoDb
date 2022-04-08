@@ -224,6 +224,69 @@ db.score.find({id:/|a-Z|/},{id:1,name:1})
 
 db.score.find({id:/[a-Z]/},{id:1,name:1})
 
+[Aggregation]
+
+- Aggregation framework와 map
+1. 연산자
+    - $match: where절, having 절과 같은 개념
+    - $group : group by
+    - $sort : order by
+    - $sum : 총합
+    - $avg : 평균
+    - $max : 최대값
+2. 형식
+    
+     db.collection명.aggregate(aggregation연산들을 이용해서 명령어를 정의)
+    
+     → 여러 개를 사용하는 경우 배열로 표현
+    
+- 예제
+
+```json
+// addr별 인원수
+db.score.aggregate([{$group:{myaddr:"$addr", num:{$sum:1}}}]) // X (필드명은_id)
+db.score.aggregate([{$group:{_id:"$addr", num:{$sum:1}}}]) // addr필드에 저장된 값을 가져올 것이므로 $와 함께 사용
+// RDBMS
+// select addr as myaddr, count(id) num
+// from score
+// gorup by addr
+// dept별 인원수
+db.score.aggregate([{$group:{_id:"$dept", num:{$sum:1}}}])
+// dept별 java 평균
+db.score.aggregate([{$group:{_id:"$dept", avg:{$avg:"$java"}}}])
+// dept별 servlet 합계
+db.score.aggregate([{$group:{_id:"$addr", sum:{$sum:"$servlet"}}}])
+// 조건을 적용한 예제
+// $match를 써서 조건을 적용
+// java가 80점 넘는 사람들이 부서별로 몇 명인지 구하기
+// select dept,count(id)
+// from score
+// where java>= 80
+// group by dept
+db.score.aggregate([{$match:{java:{$gte:90}}},{$group:{_id:"$dept",num:{$sum:1}}}])
+db.test.find({"favorites.city":{$in :["서울","인천"]}})
+db.test.find({$or : [{"favorites.movie":"쉬리"},{dept:"인사"}]})
+db.test.find({$and : [{"favorites.city":{$in : ["부산","울산"]}},{"favorites.movie":"헬로카봇"}]})
+// 1. dept가 인사인 document의 servlet 평균 구하기
+db.test.aggregate([{$match:{dept:{$eq:"인사"}}},{$group:{_id:"$dept", avg:{$avg:"$servlet"}}}])
+// 2. java가 80점이 넘는 사람들의 부서별로 몇 명인지 구하기
+db.score.aggregate([{$match:{java:{$gte:80}}},{$group:{_id:"$dept",num:{$sum:1}}}])
+// 3. 2번 결과를 인원수 데이터를 내림차순으로 정렬해 보세요.
+db.score.aggregate([{$match:{java:{$gte:80}}},{$group:{_id:"$dept",num:{$sum:1}}},{ $sort : { score : -1}}])
+// 4. 앞에서 작업한 결과에 null인 document를 제외하세요
+
+// 5. 다음과 같은 조건을 만족하는 document의 부서별 인원수를 구하세요
+    -  서울, 울산에 거주한 경험이 있고 헬로카봇을 본 적이 있다.
+    -  java 점수가 80점 이상이다.
+    - 위 두 개의 조건을 모두 만족해야 한다.
+db.test.aggregate([{$match:{$and : [{"favorites.city":{$in : ["부산","울산"]}},{"favorites.movie":"헬로카봇"},{java:{$gte:80}}]}},{$group:{_id:"$dept",num:{$sum:1}}}])
+// 6. 다음과 같은 조건을 만족하는 document 들의 부서별로 java의 평균을 구하세요
+    - 인천에 거주한 경험이 있거나 겨울왕국을 본 경험이 있다.
+   -  java 점수가 90점 이상이다.
+   - 위 두 개의 조건은 둘 중에 하나만 만족하면 됩니다.
+db.test.aggregate([{$match:{$and : [{$or : [{"favorites.city":"인천"},{"favorites.movie":"겨울왕국"}]},{"favorites.movie":"헬로카봇"},{java:{$gte:80}}]}},{$group:{_id:"$dept",num:{$sum:1}}}])
+```
+
 ## Document 수정
 
 - update
@@ -354,3 +417,8 @@ db.board.update({no:2},{$set : {comment : [{"no" : 2, "content":"three","count1"
 db.collection명.remove({조건})
 =>update와 remove는 find에서 적용한 조건을 동일하게 사용할 수 있다.
 ```
+
+<h2> Python MongoDb 연결</h2>
+<br>
+<a href = "/__ConnectionPython">바로가기</a>
+
